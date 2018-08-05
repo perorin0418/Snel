@@ -1,0 +1,10 @@
+create table file_table(
+
+	path text primary key,
+
+	name text,
+
+	date integer,
+
+	size integer
+);
