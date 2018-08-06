@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import org.net.perorin.snel.main.index.datum.AppDatum;
 import org.net.perorin.snel.main.index.datum.FileDatum;
@@ -13,7 +12,6 @@ import org.net.perorin.snel.main.index.datum.FolderDatum;
 
 public class IndexInserter {
 
-	private Logger logger = Logger.getLogger("IndexInserter");
 	private String dbPath = "";
 
 	public IndexInserter(Path dbPath) {
@@ -46,12 +44,12 @@ public class IndexInserter {
 					pstmt.setLong(4, datum.size);
 					pstmt.executeUpdate();
 				} catch (Exception ex) {
-					logger.warning("insert失敗:" + datum);
+					System.out.println("insert失敗:" + datum);
 				}
 			}
 			conn.commit();
 		} catch (SQLException e) {
-			logger.warning("insert実行中にエラー発生");
+			System.out.println("insert実行中にエラー発生");
 		}
 	}
 
@@ -65,12 +63,12 @@ public class IndexInserter {
 					pstmt.setString(2, datum.name);
 					pstmt.executeUpdate();
 				} catch (Exception ex) {
-					logger.warning("insert失敗:" + datum);
+					System.out.println("insert失敗:" + datum);
 				}
 			}
 			conn.commit();
 		} catch (SQLException e) {
-			logger.warning("insert実行中にエラー発生");
+			System.out.println("insert実行中にエラー発生");
 		}
 	}
 
@@ -84,12 +82,12 @@ public class IndexInserter {
 					pstmt.setString(2, datum.name);
 					pstmt.executeUpdate();
 				} catch (Exception ex) {
-					logger.warning("insert失敗:" + datum);
+					System.out.println("insert失敗:" + datum);
 				}
 			}
 			conn.commit();
 		} catch (SQLException e) {
-			logger.warning("insert実行中にエラー発生");
+			System.out.println("insert実行中にエラー発生");
 		}
 	}
 }

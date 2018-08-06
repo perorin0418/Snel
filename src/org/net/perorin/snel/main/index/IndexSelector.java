@@ -7,24 +7,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.net.perorin.snel.main.index.datum.Datum;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexSelector {
 
-	public static void main(String[] args) {
-		IndexSelector is = new IndexSelector();
-
-		List<String> targets = new ArrayList<>();
-		targets.add(":djsound");
-		targets.add("同人");
-
-		is.selectFile(targets, 0);
-	}
-
-	private Logger logger = Logger.getLogger("IndexSelector");
 	private static SnelProperties propertis = SnelProperties.getInstance();
 
 	public Connection connect() {
@@ -53,9 +41,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			logger.warning("select実行中にエラー発生");
+			System.out.println("select実行中にエラー発生");
 		}
-		logger.info("select result: " + ret.size() + " records");
+		System.out.println("select result: " + ret.size() + " records");
 		return ret;
 	}
 
@@ -122,9 +110,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			logger.warning("select実行中にエラー発生");
+			System.out.println("select実行中にエラー発生");
 		}
-		logger.info("select result: " + ret.size() + " records");
+		System.out.println("select result: " + ret.size() + " records");
 		return ret;
 	}
 
@@ -183,9 +171,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			logger.warning("select実行中にエラー発生");
+			System.out.println("select実行中にエラー発生");
 		}
-		logger.info("select result: " + ret.size() + " records");
+		System.out.println("select result: " + ret.size() + " records");
 		return ret;
 	}
 

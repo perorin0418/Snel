@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 import org.net.perorin.snel.main.index.datum.AppDatum;
 import org.net.perorin.snel.main.index.datum.FileDatum;
@@ -21,7 +20,6 @@ import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexCreator {
 
-	private static Logger logger = Logger.getLogger("IndexCreator");
 	private static SnelProperties propertis = SnelProperties.getInstance();
 	private static Path db_template = new File("./contents/sqlite3/template/snel.db").toPath();
 	private static Path db_file = new File("./contents/sqlite3/snel.db").toPath();
@@ -51,26 +49,26 @@ public class IndexCreator {
 
 				@Override
 				public void run() {
-					logger.info("create start [" + path + "]");
+					System.out.println("create start [" + path + "]");
 					File file = createFileAndFolderList(path);
 					IndexInserter ii = new IndexInserter(db_buf);
 					readFileAndFolderList(file, new Consumer<List<FileDatum>>() {
 
 						@Override
 						public void accept(List<FileDatum> list) {
-							logger.info("insert [" + path + "]'s file:" + list.size());
+							System.out.println("insert [" + path + "]'s file:" + list.size());
 							ii.insert(list.toArray(new FileDatum[list.size()]));
 						}
 					}, new Consumer<List<FolderDatum>>() {
 
 						@Override
 						public void accept(List<FolderDatum> list) {
-							logger.info("insert [" + path + "]'s folder:" + list.size());
+							System.out.println("insert [" + path + "]'s folder:" + list.size());
 							ii.insert(list.toArray(new FolderDatum[list.size()]));
 						}
 					});
 					file.delete();
-					logger.info("create end [" + path + "]");
+					System.out.println("create end [" + path + "]");
 				}
 			};
 			thread.start();
@@ -248,7 +246,7 @@ public class IndexCreator {
 		hiddenFolderList = new ArrayList<>();
 		try {
 			for (String path : paths) {
-				logger.info("create hidden list start [" + path + "]");
+				System.out.println("create hidden list start [" + path + "]");
 				File file = new File("./contents/tmp/hidden-" + path.hashCode() + ".tmp");
 
 				if (!file.exists()) {
@@ -272,7 +270,7 @@ public class IndexCreator {
 						hiddenFolderList.add(line);
 					}
 				}
-				logger.info("create hidden list end   [" + path + "]");
+				System.out.println("create hidden list end   [" + path + "]");
 			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
@@ -285,7 +283,7 @@ public class IndexCreator {
 		try {
 			for (String path : paths) {
 				path = path.replaceAll("\\$\\{user.name\\}", System.getProperty("user.name"));
-				logger.info("create file list start [" + path + "]");
+				System.out.println("create file list start [" + path + "]");
 				File file = new File("./contents/tmp/" + path.hashCode() + ".tmp");
 
 				List<String> cmd = new ArrayList<>();
@@ -308,7 +306,7 @@ public class IndexCreator {
 					}
 				}
 				file.delete();
-				logger.info("create file list end   [" + path + "]");
+				System.out.println("create file list end   [" + path + "]");
 			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();

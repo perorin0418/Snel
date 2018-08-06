@@ -13,7 +13,6 @@ public class Main {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		try {
 			SnelField dialog = new SnelField();
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
