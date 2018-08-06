@@ -21,10 +21,6 @@ import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexCreator {
 
-	public static void main(String[] args) {
-		createIndex();
-	}
-
 	private static Logger logger = Logger.getLogger("IndexCreator");
 	private static SnelProperties propertis = SnelProperties.getInstance();
 	private static Path db_template = new File("./contents/sqlite3/template/snel.db").toPath();
