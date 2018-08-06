@@ -4,7 +4,7 @@
   <headerType>gui</headerType>
   <jar>C:\Users\perorin\Desktop\Desktop\pleiades\workspace\Snel\snel.jar</jar>
   <outfile>C:\Users\perorin\Desktop\Desktop\pleiades\workspace\Snel\Snel.exe</outfile>
-  <errTitle></errTitle>
+  <errTitle>Java1.8以上が必要です。</errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>

@@ -26,8 +26,22 @@ public class IndexCreator {
 	private static Path db_buf = new File("./contents/tmp/snel-" + System.currentTimeMillis() + ".db").toPath();
 	private static List<String> hiddenFolderList = null;
 
+	private static List<String> getPaths() {
+		List<String> ret = new ArrayList<>();
+		String propertisList = propertis.getProperty(SnelProperties.snel_index_file_targets_folder, "not found");
+		if ("not found".equals(propertisList)) {
+			File[] roots = File.listRoots();
+			for (File f : roots) {
+				ret.add(f.getPath());
+			}
+		} else {
+			ret = Arrays.asList(propertisList.split(";"));
+		}
+		return ret;
+	}
+
 	public static void createIndex() {
-		List<String> paths = Arrays.asList(propertis.getProperty(SnelProperties.snel_index_file_targets_folder).split(";"));
+		List<String> paths = getPaths();
 
 		// 隠しフォルダーを除外するためにリストを作成しておく
 		getHiddenFolder(paths);
