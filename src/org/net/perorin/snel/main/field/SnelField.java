@@ -1,16 +1,21 @@
 package org.net.perorin.snel.main.field;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Robot;
 import java.awt.Toolkit;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.InputMethodListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,9 +138,14 @@ public class SnelField extends JDialog {
 		setResizable(false);
 		Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
 		setBounds(ss.width / 2 - 400, ss.height / 2 - 300, 800, 126);
-		//		setBounds(ss.width / 2 - 400, ss.height / 2 - 300, 800, 800);
 		getContentPane().setLayout(new BorderLayout());
 		setAlwaysOnTop(true);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
 
 		JPanel pnlFieldBack = new JPanel();
 		pnlFieldBack.setBackground(Color.GRAY);
@@ -225,16 +235,11 @@ public class SnelField extends JDialog {
 		field.setCaretColor(Color.lightGray);
 		field.setForeground(FILE_SEARCH_COLOR);
 		field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		field.addFocusListener(new FocusListener() {
+		field.addFocusListener(new FocusAdapter() {
 
 			@Override
 			public void focusLost(FocusEvent e) {
 				setVisibleField(false);
-			}
-
-			@Override
-			public void focusGained(FocusEvent e) {
-				setVisibleField(true);
 			}
 		});
 		field.addInputMethodListener(new InputMethodListener() {
@@ -298,10 +303,20 @@ public class SnelField extends JDialog {
 	}
 
 	private void setVisibleField(boolean b) {
+		System.out.println("Change visible:" + b);
 		visible = b;
 		Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
 		if (visible) {
 			setLocation(ss.width / 2 - 400, ss.height / 2 - 300);
+			try {
+				Robot r = new Robot();
+				r.mouseMove(ss.width / 2 + 280, ss.height / 2 - 230);
+				r.mousePress(InputEvent.BUTTON1_MASK);
+				r.delay(10);
+				r.mouseRelease(InputEvent.BUTTON1_MASK);
+			} catch (AWTException e) {
+				e.printStackTrace();
+			}
 		} else {
 			setLocation(20000, 20000);
 		}
@@ -312,6 +327,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void callSearch() {
+		System.out.println("Call search:" + field.getText().trim());
 		if (currenText.equals(field.getText().trim())) {
 			return;
 		} else {
@@ -333,6 +349,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void setPageNo(int no) {
+		System.out.println("Set page No.:" + no);
 		page = no;
 		lblPage.setText(page + " page");
 	}
@@ -357,6 +374,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void search() {
+		System.out.println("Search:" + currenText);
 		if (!"".equals(currenText)) {
 
 			List<String> targets = splitTarget(currenText);
@@ -421,6 +439,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeSelectNext() {
+		System.out.println("Change select next" + select);
 
 		// 検索結果が最大表示件数未満なのに、次のページに行くことはできない
 		if (select + 1 == record_count && select + 1 < propertis.getPropertyAsInt(SnelProperties.snel_search_record_counts)) {
@@ -440,6 +459,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeSelectPrev() {
+		System.out.println("Change select prev" + select);
 
 		// 0番目の0ページより上には何もない
 		if (select == 0 && page == 0) {
@@ -461,6 +481,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeModeNext() {
+		System.out.println("Chang Mode");
 		if (lblSearchType.getForeground().equals(FILE_SEARCH_COLOR)) {
 			mode = 1;
 			lblSearchType.setText(FOLDER_SEARCH_TITLE);
