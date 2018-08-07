@@ -55,9 +55,9 @@ public class IndexSelector {
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
 			if (target.startsWith(":")) {
-				pathTargets.add("\"%" + target.replaceFirst(":", "") + "%\"");
+				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
 			} else {
-				nameTargets.add("\"%" + target + "%\"");
+				nameTargets.add("\"" + target + "%\"");
 			}
 		});
 
@@ -124,9 +124,9 @@ public class IndexSelector {
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
 			if (target.startsWith(":")) {
-				pathTargets.add("\"%" + target.replaceFirst(":", "") + "%\"");
+				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
 			} else {
-				nameTargets.add("\"%" + target + "%\"");
+				nameTargets.add("\"" + target + "%\"");
 			}
 		});
 
@@ -185,9 +185,9 @@ public class IndexSelector {
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
 			if (target.startsWith(":")) {
-				pathTargets.add("\"%" + target.replaceFirst(":", "") + "%\"");
+				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
 			} else {
-				nameTargets.add("\"%" + target + "%\"");
+				nameTargets.add("\"" + target + "%\"");
 			}
 		});
 
