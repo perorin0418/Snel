@@ -1,6 +1,0 @@
-create table folder_table(
-
-	path text primary key,
-
-	name text
-);

@@ -1,0 +1,7 @@
+PRAGMA default_synchronous = OFF;
+create table file_table ( path text primary key collate nocase, name text collate nocase, date integer, size integer );
+create index file_table_index on file_table ( name collate nocase );
+create table folder_table ( path text primary key collate nocase, name text collate nocase );
+create index folder_table_index on folder_table ( name collate nocase );
+create table app_table ( path text primary key collate nocase, name text collate nocase );
+create index app_table_index on app_table ( name collate nocase );
