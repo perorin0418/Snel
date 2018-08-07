@@ -78,6 +78,7 @@ public class SnelField extends JDialog {
 	private JLabel lblNotFound;
 	private JLabel lblPage;
 	private JLabel lblProc;
+	private JLabel lblIcon;
 
 	public SnelField() {
 
@@ -103,11 +104,9 @@ public class SnelField extends JDialog {
 					changeModeNext();
 					search();
 				} else
-				// Shift + Ctrl で画面表示切替
-				if (((e.getModifiers() & NativeKeyEvent.SHIFT_L_MASK) != 0) &&
-						((e.getModifiers() & NativeKeyEvent.CTRL_L_MASK) != 0) &&
-						((e.getKeyCode() == NativeKeyEvent.VC_SHIFT) ||
-								(e.getKeyCode() == NativeKeyEvent.VC_CONTROL))) {
+				// Alt + Space で画面表示切替
+				if (((e.getModifiers() & NativeKeyEvent.ALT_L_MASK) != 0) &&
+						(e.getKeyCode() == NativeKeyEvent.VC_SPACE)) {
 					setVisibleField(!isVisibleField());
 				} else
 				// 上下キーの検索結果の選択切替
@@ -157,6 +156,20 @@ public class SnelField extends JDialog {
 		pnlTypeAndPage.setBackground(Color.GRAY);
 		pnlFieldBack.add(pnlTypeAndPage, BorderLayout.NORTH);
 		pnlTypeAndPage.setLayout(new BorderLayout(0, 0));
+
+		lblIcon = new JLabel();
+		lblIcon.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 5));
+		lblIcon.setIcon(new ImageIcon("./contents/icon/snel_small.png"));
+		lblIcon.setToolTipText("これをダブルクリックすると終了します。");
+		lblIcon.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					System.exit(0);
+				}
+			}
+		});
+		pnlTypeAndPage.add(lblIcon, BorderLayout.WEST);
 
 		lblSearchType = new JLabel();
 		pnlTypeAndPage.add(lblSearchType, BorderLayout.CENTER);
@@ -290,7 +303,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void execute() {
-		if (isVisibleField() && !typing) {
+		if (isVisibleField() && !typing && record_count > 0) {
 			String path = rrList.get(select).lblPath.getText();
 			if (mode == 0) {
 				Executer.execFile(path);
@@ -327,12 +340,12 @@ public class SnelField extends JDialog {
 	}
 
 	private void callSearch() {
-		System.out.println("Call search:" + field.getText().trim());
 		if (currenText.equals(field.getText().trim())) {
 			return;
 		} else {
 			currenText = field.getText().trim();
 		}
+		System.out.println("Call search:" + currenText);
 
 		lblLoading.setVisible(true);
 		setPageNo(0);
@@ -384,6 +397,7 @@ public class SnelField extends JDialog {
 			}
 
 			List<Datum> result = null;
+			long start = System.currentTimeMillis();
 			if (mode == 0) {
 				result = is.selectFile(targets, page);
 			} else if (mode == 1) {
@@ -393,6 +407,7 @@ public class SnelField extends JDialog {
 			} else {
 				return;
 			}
+			System.out.println("Time spent: " + (System.currentTimeMillis() - start));
 
 			resetResultRecordList();
 			for (int i = 0; i < result.size(); i++) {
