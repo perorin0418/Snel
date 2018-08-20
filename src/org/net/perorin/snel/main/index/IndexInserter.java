@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.net.perorin.snel.main.index.datum.AppDatum;
+import org.net.perorin.snel.main.index.datum.FavoDatum;
 import org.net.perorin.snel.main.index.datum.FileDatum;
 import org.net.perorin.snel.main.index.datum.FolderDatum;
 
@@ -32,7 +32,7 @@ public class IndexInserter {
 		return null;
 	}
 
-	public void insert(FileDatum... data) {
+	public boolean insert(FileDatum... data) {
 		try (Connection conn = this.connect()) {
 			for (FileDatum datum : data) {
 				try {
@@ -48,12 +48,14 @@ public class IndexInserter {
 				}
 			}
 			conn.commit();
+			return true;
 		} catch (SQLException e) {
 			System.out.println("insert実行中にエラー発生");
+			return false;
 		}
 	}
 
-	public void insert(FolderDatum... data) {
+	public boolean insert(FolderDatum... data) {
 		try (Connection conn = this.connect()) {
 			for (FolderDatum datum : data) {
 				try {
@@ -67,16 +69,18 @@ public class IndexInserter {
 				}
 			}
 			conn.commit();
+			return true;
 		} catch (SQLException e) {
 			System.out.println("insert実行中にエラー発生");
+			return false;
 		}
 	}
 
-	public void insert(AppDatum... data) {
+	public boolean insert(FavoDatum... data) {
 		try (Connection conn = this.connect()) {
-			for (AppDatum datum : data) {
+			for (FavoDatum datum : data) {
 				try {
-					String sql = "insert into app_table(path, name) values(?, ?);";
+					String sql = "insert into favo_table(path, name) values(?, ?);";
 					PreparedStatement pstmt = conn.prepareStatement(sql);
 					pstmt.setString(1, datum.path);
 					pstmt.setString(2, datum.name);
@@ -86,8 +90,30 @@ public class IndexInserter {
 				}
 			}
 			conn.commit();
+			return true;
 		} catch (SQLException e) {
 			System.out.println("insert実行中にエラー発生");
+			return false;
+		}
+	}
+
+	public boolean insert(FavoDatum datum) {
+		try (Connection conn = this.connect()) {
+			try {
+				String sql = "insert into favo_table(path, name) values(?, ?);";
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, datum.path);
+				pstmt.setString(2, datum.name);
+				pstmt.executeUpdate();
+			} catch (Exception ex) {
+				System.out.println("insert失敗:" + datum);
+				return false;
+			}
+			conn.commit();
+			return true;
+		} catch (SQLException e) {
+			System.out.println("insert実行中にエラー発生");
+			return false;
 		}
 	}
 }

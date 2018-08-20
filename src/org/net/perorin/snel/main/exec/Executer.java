@@ -26,9 +26,9 @@ public class Executer {
 		}
 	}
 
-	public static void execApp(String file) {
+	public static void execFavo(String file) {
 		try {
-			String cmd = String.format(propertis.getProperty(SnelProperties.snel_execute_app_cmd), file);
+			String cmd = String.format(propertis.getProperty(SnelProperties.snel_execute_file_cmd), file);
 			Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
 			e.printStackTrace();

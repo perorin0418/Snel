@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.net.perorin.snel.main.index.datum.AppDatum;
+import org.net.perorin.snel.main.index.datum.FavoDatum;
 import org.net.perorin.snel.main.index.datum.FileDatum;
 import org.net.perorin.snel.main.index.datum.FolderDatum;
 import org.net.perorin.snel.main.properties.SnelProperties;
@@ -97,12 +97,14 @@ public class IndexCreator {
 				e.printStackTrace();
 			}
 		}
-
-		// 次はアプリケーションのインデックスを作る
-		createAppIndex();
 	}
 
 	public static void replaceIndex() {
+
+		// お気に入りを退避
+		IndexSelector is = new IndexSelector();
+		System.out.println("");
+		List<FavoDatum> list = is.selectFavo("select * from favo_table;");
 
 		// 書き込んだdb_bufを本番dbに上書き
 		try {
@@ -112,6 +114,10 @@ public class IndexCreator {
 			e.printStackTrace();
 			return;
 		}
+
+		// お気に入りを入れなおす
+		IndexInserter ii = new IndexInserter(db_file);
+		ii.insert(list.toArray(new FavoDatum[list.size()]));
 	}
 
 	/**
@@ -292,58 +298,4 @@ public class IndexCreator {
 		return hiddenFolderList;
 	}
 
-	private static List<String> getFileList(List<String> paths) {
-		List<String> ret = new ArrayList<>();
-		try {
-			for (String path : paths) {
-				path = path.replaceAll("\\$\\{user.name\\}", System.getProperty("user.name"));
-				System.out.println("create file list start [" + path + "]");
-				File file = new File("./contents/tmp/" + path.hashCode() + ".tmp");
-
-				List<String> cmd = new ArrayList<>();
-				cmd.add("cmd");
-				cmd.add("/c");
-				cmd.add("dir");
-				cmd.add("/s");
-				cmd.add("/b");
-				cmd.add("/a-d");
-				cmd.add(path);
-
-				ProcessBuilder pb = new ProcessBuilder(cmd);
-				pb.redirectOutput(file);
-				Process p = pb.start();
-				p.waitFor();
-				try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "Shift-JIS"))) {
-					String line;
-					while ((line = reader.readLine()) != null) {
-						ret.add(line);
-					}
-				}
-				file.delete();
-				System.out.println("create file list end   [" + path + "]");
-			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-		return ret;
-	}
-
-	private static void createAppIndex() {
-		String[] paths = propertis.getProperty(SnelProperties.snel_index_app_targets_folder).split(";");
-		String[] exts = propertis.getProperty(SnelProperties.snel_index_app_targets_extension).split(",");
-		List<AppDatum> insList = new ArrayList<>();
-		List<String> fileList = getFileList(Arrays.asList(paths));
-		for (String file : fileList) {
-			for (String ext : exts) {
-				if (file.endsWith(ext)) {
-					AppDatum datum = new AppDatum();
-					datum.path = file;
-					datum.name = new File(file).getName();
-					insList.add(datum);
-				}
-			}
-		}
-		IndexInserter ii = new IndexInserter(db_buf);
-		ii.insert(insList.toArray(new AppDatum[insList.size()]));
-	}
 }

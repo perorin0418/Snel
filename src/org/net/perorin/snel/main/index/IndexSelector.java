@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.net.perorin.snel.main.index.datum.Datum;
+import org.net.perorin.snel.main.index.datum.FavoDatum;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexSelector {
@@ -32,6 +33,7 @@ public class IndexSelector {
 		List<Datum> ret = new ArrayList<>();
 		try (Connection conn = this.connect()) {
 			String sql = createFileSql(targets, page);
+			System.out.println(sql);
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -54,10 +56,16 @@ public class IndexSelector {
 		List<String> pathTargets = new ArrayList<>();
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
-			if (target.startsWith(":")) {
-				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
+			if (target.startsWith("/")) {
+				String buf = target.replaceFirst("/", "");
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				pathTargets.add(buf);
 			} else {
-				nameTargets.add("\"" + target + "%\"");
+				String buf = target;
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				nameTargets.add(buf);
 			}
 		});
 
@@ -123,10 +131,16 @@ public class IndexSelector {
 		List<String> pathTargets = new ArrayList<>();
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
-			if (target.startsWith(":")) {
-				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
+			if (target.startsWith("/")) {
+				String buf = target.replaceFirst("/", "");
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				pathTargets.add(buf);
 			} else {
-				nameTargets.add("\"" + target + "%\"");
+				String buf = target;
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				nameTargets.add(buf);
 			}
 		});
 
@@ -158,10 +172,10 @@ public class IndexSelector {
 		return sql;
 	}
 
-	public List<Datum> selectApp(List<String> targets, int page) {
+	public List<Datum> selectFavo(List<String> targets, int page) {
 		List<Datum> ret = new ArrayList<>();
 		try (Connection conn = this.connect()) {
-			String sql = createAppSql(targets, page);
+			String sql = createFavoSql(targets, page);
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -177,17 +191,41 @@ public class IndexSelector {
 		return ret;
 	}
 
-	private String createAppSql(List<String> targets, int page) {
+	public List<FavoDatum> selectFavo(String sql) {
+		List<FavoDatum> ret = new ArrayList<>();
+		try (Connection conn = this.connect()) {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				FavoDatum datum = new FavoDatum();
+				datum.path = rs.getString(1);
+				datum.name = rs.getString(2);
+				ret.add(datum);
+			}
+		} catch (SQLException e) {
+			System.out.println("select実行中にエラー発生");
+		}
+		System.out.println("select result: " + ret.size() + " records");
+		return ret;
+	}
 
-		String sql = "select path, name from app_table where";
+	private String createFavoSql(List<String> targets, int page) {
+
+		String sql = "select path, name from favo_table where";
 
 		List<String> pathTargets = new ArrayList<>();
 		List<String> nameTargets = new ArrayList<>();
 		targets.forEach(target -> {
-			if (target.startsWith(":")) {
-				pathTargets.add("\"" + target.replaceFirst(":", "") + "%\"");
+			if (target.startsWith("/")) {
+				String buf = target.replaceFirst("/", "");
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				pathTargets.add(buf);
 			} else {
-				nameTargets.add("\"" + target + "%\"");
+				String buf = target;
+				buf = target.startsWith("^") ? ("\"" + buf.replaceFirst("\\^", "")) : ("\"%" + buf);
+				buf = target.endsWith("$") ? (buf.replaceFirst("\\$", "") + "\"") : (buf + "%\"");
+				nameTargets.add(buf);
 			}
 		});
 
@@ -202,7 +240,7 @@ public class IndexSelector {
 			sql += path + " and" + name;
 		}
 
-		switch (propertis.getProperty(SnelProperties.snel_search_app_sort_by)) {
+		switch (propertis.getProperty(SnelProperties.snel_search_favo_sort_by)) {
 		case "path":
 			sql += " order by path";
 			break;

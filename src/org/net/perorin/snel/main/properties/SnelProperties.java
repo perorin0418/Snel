@@ -10,17 +10,14 @@ public class SnelProperties extends Properties {
 	public static final String snel_index_cmd_dir_folder_delete_regex = "snel.index.cmd.dir.folder.delete.regex";
 	public static final String snel_index_cmd_dir_file_find_regex = "snel.index.cmd.dir.file.find.regex";
 	public static final String snel_index_sql_flush_buffer_size = "snel.index.sql.flush.buffer.size";
-	public static final String snel_index_app_targets_folder = "snel.index.app.targets.folder";
-	public static final String snel_index_app_targets_extension = "snel.index.app.targets.extension";
 	public static final String snel_index_file_targets_folder = "snel.index.file.targets.folder";
 	public static final String snel_search_record_counts = "snel.search.record.counts";
 	public static final String snel_search_file_sort_by = "snel.search.file.sort.by";
 	public static final String snel_search_folder_sort_by = "snel.search.folder.sort.by";
-	public static final String snel_search_app_sort_by = "snel.search.app.sort.by";
+	public static final String snel_search_favo_sort_by = "snel.search.favo.sort.by";
 	public static final String snel_search_delay = "snel.search.delay";
 	public static final String snel_execute_file_cmd = "snel.execute.file.cmd";
 	public static final String snel_execute_folder_cmd = "snel.execute.folder.cmd";
-	public static final String snel_execute_app_cmd = "snel.execute.app.cmd";
 	public static final String snel_execute_cmd_cmd = "snel.execute.cmd.cmd";
 
 	private static SnelProperties properties = null;

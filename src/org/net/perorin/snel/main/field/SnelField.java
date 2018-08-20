@@ -7,6 +7,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Robot;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
@@ -41,18 +44,21 @@ import org.jnativehook.keyboard.NativeKeyAdapter;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.net.perorin.snel.main.exec.Executer;
 import org.net.perorin.snel.main.index.IndexCreator;
+import org.net.perorin.snel.main.index.IndexDeleter;
+import org.net.perorin.snel.main.index.IndexInserter;
 import org.net.perorin.snel.main.index.IndexSelector;
 import org.net.perorin.snel.main.index.datum.Datum;
+import org.net.perorin.snel.main.index.datum.FavoDatum;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class SnelField extends JDialog {
 
 	private static final String FILE_SEARCH_TITLE = "ファイル検索";
 	private static final String FOLDER_SEARCH_TITLE = "フォルダー検索";
-	private static final String APP_SEARCH_TITLE = "アプリケーション検索";
+	private static final String FAVO_SEARCH_TITLE = "お気に入り検索";
 	private static final Color FILE_SEARCH_COLOR = new Color(0, 255, 127);
 	private static final Color FOLDER_SEARCH_COLOR = new Color(255, 215, 0);
-	private static final Color APP_SEARCH_COLOR = new Color(153, 255, 255);
+	private static final Color FAVO_SEARCH_COLOR = new Color(153, 255, 255);
 	private static final Icon file_icon = new ImageIcon("./contents/icon/file_icon.png");
 
 	private JLabel lblSearchType;
@@ -70,6 +76,7 @@ public class SnelField extends JDialog {
 
 	private boolean isIndexCreating = false;
 	private boolean visible = true;
+	private boolean extension = false;
 	private int record_count = 10;
 	private String currenText = "";
 	private Timer searchTimer = new Timer();
@@ -117,11 +124,19 @@ public class SnelField extends JDialog {
 				} else
 				// Enterキーで実行
 				if (e.getModifiers() == 0 && e.getKeyCode() == NativeKeyEvent.VC_ENTER) {
-					execute();
+					if (field.hasFocus()) {
+						execute();
+					}
 				} else
 				// Escキーで画面消す
 				if (e.getModifiers() == 0 && e.getKeyCode() == NativeKeyEvent.VC_ESCAPE) {
 					setVisibleField(false);
+				} else
+				// アプリケーションキーでコンテキストメニューを表示
+				if (e.getModifiers() == 0 && e.getKeyCode() == NativeKeyEvent.VC_CONTEXT_MENU) {
+					if (record_count > 0) {
+						rrList.get(select).setExtensionVisible(true);
+					}
 				}
 			}
 
@@ -252,7 +267,9 @@ public class SnelField extends JDialog {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				setVisibleField(false);
+				if (!extension) {
+					setVisibleField(false);
+				}
 			}
 		});
 		field.addInputMethodListener(new InputMethodListener() {
@@ -293,7 +310,150 @@ public class SnelField extends JDialog {
 		pnlNotFound.add(lblNotFound);
 
 		for (int i = 0; i < propertis.getPropertyAsInt(SnelProperties.snel_search_record_counts); i++) {
-			ResultRecord rr = new ResultRecord();
+			ResultRecord rr = new ResultRecord() {
+				@Override
+				public void actionPlay() {
+					execute();
+					setExtensionVisible(false);
+				}
+
+				@Override
+				public void actionFolder() {
+					String path = rrList.get(select).lblPath.getText();
+					Executer.execFolder(new File(path).getParent());
+					setExtensionVisible(false);
+				}
+
+				@Override
+				public void actionOpen() {
+					//TODO プログラムから開くを実装
+					lblMessage.setText("未実装");
+					Timer t = new Timer();
+					TimerTask tt = new TimerTask() {
+						@Override
+						public void run() {
+							lblMessage.setText("");
+							repaint();
+						}
+					};
+					t.schedule(tt, 3000L);
+				}
+
+				@Override
+				public void actionClip() {
+					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+					String path = rrList.get(select).lblPath.getText();
+					TempFileTransferable tft = new TempFileTransferable(new File(path));
+					c.setContents(tft, null);
+					lblMessage.setText("　ファイルをクリップボードにコピーしました。　");
+					Timer t = new Timer();
+					TimerTask tt = new TimerTask() {
+						@Override
+						public void run() {
+							lblMessage.setText("");
+							repaint();
+						}
+					};
+					t.schedule(tt, 3000L);
+				}
+
+				@Override
+				public void actionFavo() {
+					if (mode != 2) {
+						IndexInserter ii = new IndexInserter(new File("./contents/sqlite3/snel.db").toPath());
+						FavoDatum fd = new FavoDatum();
+						fd.path = rrList.get(select).lblPath.getText();
+						fd.name = rrList.get(select).lblName.getText();
+						if (ii.insert(fd)) {
+							lblMessage.setText("　ファイルをお気に入りに追加しました。　");
+							Timer t = new Timer();
+							TimerTask tt = new TimerTask() {
+								@Override
+								public void run() {
+									lblMessage.setText("");
+									repaint();
+								}
+							};
+							t.schedule(tt, 3000L);
+						} else {
+							lblMessage.setText("　ファイルをすでに登録されているかもしれません。　");
+							Timer t = new Timer();
+							TimerTask tt = new TimerTask() {
+								@Override
+								public void run() {
+									lblMessage.setText("");
+									repaint();
+								}
+							};
+							t.schedule(tt, 3000L);
+						}
+					} else {
+						IndexDeleter id = new IndexDeleter();
+						FavoDatum fd = new FavoDatum();
+						fd.path = rrList.get(select).lblPath.getText();
+						fd.name = rrList.get(select).lblName.getText();
+						if (id.delete(fd)) {
+							lblMessage.setText("　お気に入りから削除しました。　");
+							Timer t = new Timer();
+							TimerTask tt = new TimerTask() {
+								@Override
+								public void run() {
+									lblMessage.setText("");
+									repaint();
+								}
+							};
+							t.schedule(tt, 3000L);
+						} else {
+							lblMessage.setText("　失敗しました。　");
+							Timer t = new Timer();
+							TimerTask tt = new TimerTask() {
+								@Override
+								public void run() {
+									lblMessage.setText("");
+									repaint();
+								}
+							};
+							t.schedule(tt, 3000L);
+						}
+					}
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					field.requestFocusInWindow();
+				}
+
+				@Override
+				public void setExtensionVisible(boolean b) {
+					super.setExtensionVisible(b);
+					extension = b;
+				}
+			};
+			rr.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getButton() == MouseEvent.BUTTON1) {
+						execute();
+					} else if (e.getButton() == MouseEvent.BUTTON3) {
+						for (ResultRecord r : rrList) {
+							r.setExtensionVisible(false);
+						}
+						rr.setExtensionVisible(true);
+					}
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					for (ResultRecord r : rrList) {
+						if (rrList.indexOf(rr) != select) {
+							r.setSelected(false);
+							r.setExtensionVisible(false);
+						}
+					}
+					rr.setSelected(true);
+					select = rrList.indexOf(rr);
+				}
+			});
 			if (i == 0) {
 				rr.setSelected(true);
 			}
@@ -310,7 +470,7 @@ public class SnelField extends JDialog {
 			} else if (mode == 1) {
 				Executer.execFolder(path);
 			} else if (mode == 2) {
-				Executer.execApp(path);
+				Executer.execFavo(path);
 			}
 		}
 	}
@@ -403,7 +563,7 @@ public class SnelField extends JDialog {
 			} else if (mode == 1) {
 				result = is.selectFolder(targets, page);
 			} else if (mode == 2) {
-				result = is.selectApp(targets, page);
+				result = is.selectFavo(targets, page);
 			} else {
 				return;
 			}
@@ -435,7 +595,7 @@ public class SnelField extends JDialog {
 		} else {
 			if (!"".equals(currenText) && record_count <= 0) {
 				lblNotFound.setVisible(true);
-				SnelField.this.setSize(800, 186);
+				SnelField.this.setSize(800, 185);
 			} else {
 				lblNotFound.setVisible(false);
 				SnelField.this.setSize(800, 126);
@@ -507,13 +667,13 @@ public class SnelField extends JDialog {
 
 		} else if (lblSearchType.getForeground().equals(FOLDER_SEARCH_COLOR)) {
 			mode = 2;
-			lblSearchType.setText(APP_SEARCH_TITLE);
-			lblSearchType.setForeground(APP_SEARCH_COLOR);
-			lblPage.setForeground(APP_SEARCH_COLOR);
-			pnlFieldCover.setBorder(BorderFactory.createLineBorder(APP_SEARCH_COLOR, 3, true));
-			field.setForeground(APP_SEARCH_COLOR);
+			lblSearchType.setText(FAVO_SEARCH_TITLE);
+			lblSearchType.setForeground(FAVO_SEARCH_COLOR);
+			lblPage.setForeground(FAVO_SEARCH_COLOR);
+			pnlFieldCover.setBorder(BorderFactory.createLineBorder(FAVO_SEARCH_COLOR, 3, true));
+			field.setForeground(FAVO_SEARCH_COLOR);
 
-		} else if (lblSearchType.getForeground().equals(APP_SEARCH_COLOR)) {
+		} else if (lblSearchType.getForeground().equals(FAVO_SEARCH_COLOR)) {
 			mode = 0;
 			lblSearchType.setText(FILE_SEARCH_TITLE);
 			lblSearchType.setForeground(FILE_SEARCH_COLOR);
@@ -523,4 +683,27 @@ public class SnelField extends JDialog {
 		}
 	}
 
+}
+
+class TempFileTransferable implements Transferable {
+	private final File file;
+
+	protected TempFileTransferable(File file) {
+		this.file = file;
+	}
+
+	@Override
+	public Object getTransferData(DataFlavor flavor) {
+		return Arrays.asList(file);
+	}
+
+	@Override
+	public DataFlavor[] getTransferDataFlavors() {
+		return new DataFlavor[] { DataFlavor.javaFileListFlavor };
+	}
+
+	@Override
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
+		return flavor.equals(DataFlavor.javaFileListFlavor);
+	}
 }
