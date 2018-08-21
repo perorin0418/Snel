@@ -49,6 +49,7 @@ import org.net.perorin.snel.main.index.IndexInserter;
 import org.net.perorin.snel.main.index.IndexSelector;
 import org.net.perorin.snel.main.index.datum.Datum;
 import org.net.perorin.snel.main.index.datum.FavoDatum;
+import org.net.perorin.snel.main.logger.SnelLogger;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class SnelField extends JDialog {
@@ -96,7 +97,7 @@ public class SnelField extends JDialog {
 				//フックを登録
 				GlobalScreen.registerNativeHook();
 			} catch (NativeHookException e) {
-				e.printStackTrace();
+				SnelLogger.warning(e);
 				System.exit(-1);
 			}
 		}
@@ -476,7 +477,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void setVisibleField(boolean b) {
-		System.out.println("Change visible:" + b);
+		SnelLogger.info("Change visible:" + b);
 		visible = b;
 		Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
 		if (visible) {
@@ -488,7 +489,7 @@ public class SnelField extends JDialog {
 				r.delay(10);
 				r.mouseRelease(InputEvent.BUTTON1_MASK);
 			} catch (AWTException e) {
-				e.printStackTrace();
+				SnelLogger.warning(e);
 			}
 		} else {
 			setLocation(20000, 20000);
@@ -505,7 +506,7 @@ public class SnelField extends JDialog {
 		} else {
 			currenText = field.getText().trim();
 		}
-		System.out.println("Call search:" + currenText);
+		SnelLogger.info("Call search:" + currenText);
 
 		lblLoading.setVisible(true);
 		setPageNo(0);
@@ -522,7 +523,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void setPageNo(int no) {
-		System.out.println("Set page No.:" + no);
+		SnelLogger.info("Set page No.:" + no);
 		page = no;
 		lblPage.setText(page + " page");
 	}
@@ -547,7 +548,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void search() {
-		System.out.println("Search:" + currenText);
+		SnelLogger.info("Search:" + currenText);
 		if (!"".equals(currenText)) {
 
 			List<String> targets = splitTarget(currenText);
@@ -567,7 +568,7 @@ public class SnelField extends JDialog {
 			} else {
 				return;
 			}
-			System.out.println("Time spent: " + (System.currentTimeMillis() - start));
+			SnelLogger.info("Time spent: " + (System.currentTimeMillis() - start));
 
 			resetResultRecordList();
 			for (int i = 0; i < result.size(); i++) {
@@ -614,7 +615,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeSelectNext() {
-		System.out.println("Change select next" + select);
+		SnelLogger.info("Change select next" + select);
 
 		// 検索結果が最大表示件数未満なのに、次のページに行くことはできない
 		if (select + 1 == record_count && select + 1 < propertis.getPropertyAsInt(SnelProperties.snel_search_record_counts)) {
@@ -634,7 +635,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeSelectPrev() {
-		System.out.println("Change select prev" + select);
+		SnelLogger.info("Change select prev" + select);
 
 		// 0番目の0ページより上には何もない
 		if (select == 0 && page == 0) {
@@ -656,7 +657,7 @@ public class SnelField extends JDialog {
 	}
 
 	private void changeModeNext() {
-		System.out.println("Chang Mode");
+		SnelLogger.info("Chang Mode");
 		if (lblSearchType.getForeground().equals(FILE_SEARCH_COLOR)) {
 			mode = 1;
 			lblSearchType.setText(FOLDER_SEARCH_TITLE);

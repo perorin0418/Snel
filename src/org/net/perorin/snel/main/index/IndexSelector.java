@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.net.perorin.snel.main.index.datum.Datum;
 import org.net.perorin.snel.main.index.datum.FavoDatum;
+import org.net.perorin.snel.main.logger.SnelLogger;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexSelector {
@@ -24,7 +25,7 @@ public class IndexSelector {
 			Connection conn = DriverManager.getConnection(url);
 			return conn;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 		return null;
 	}
@@ -33,7 +34,7 @@ public class IndexSelector {
 		List<Datum> ret = new ArrayList<>();
 		try (Connection conn = this.connect()) {
 			String sql = createFileSql(targets, page);
-			System.out.println(sql);
+			SnelLogger.info(sql);
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -43,9 +44,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			System.out.println("select実行中にエラー発生");
+			SnelLogger.info("select実行中にエラー発生");
 		}
-		System.out.println("select result: " + ret.size() + " records");
+		SnelLogger.info("select result: " + ret.size() + " records");
 		return ret;
 	}
 
@@ -118,9 +119,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			System.out.println("select実行中にエラー発生");
+			SnelLogger.info("select実行中にエラー発生");
 		}
-		System.out.println("select result: " + ret.size() + " records");
+		SnelLogger.info("select result: " + ret.size() + " records");
 		return ret;
 	}
 
@@ -185,9 +186,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			System.out.println("select実行中にエラー発生");
+			SnelLogger.info("select実行中にエラー発生");
 		}
-		System.out.println("select result: " + ret.size() + " records");
+		SnelLogger.info("select result: " + ret.size() + " records");
 		return ret;
 	}
 
@@ -203,9 +204,9 @@ public class IndexSelector {
 				ret.add(datum);
 			}
 		} catch (SQLException e) {
-			System.out.println("select実行中にエラー発生");
+			SnelLogger.info("select実行中にエラー発生");
 		}
-		System.out.println("select result: " + ret.size() + " records");
+		SnelLogger.info("select result: " + ret.size() + " records");
 		return ret;
 	}
 

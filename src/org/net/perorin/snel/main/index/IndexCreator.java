@@ -13,9 +13,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.swing.JOptionPane;
+
+import org.net.perorin.snel.main.index.datum.Datum;
 import org.net.perorin.snel.main.index.datum.FavoDatum;
 import org.net.perorin.snel.main.index.datum.FileDatum;
 import org.net.perorin.snel.main.index.datum.FolderDatum;
+import org.net.perorin.snel.main.logger.SnelLogger;
 import org.net.perorin.snel.main.properties.SnelProperties;
 
 public class IndexCreator {
@@ -50,9 +54,21 @@ public class IndexCreator {
 		try {
 			Files.copy(db_template, db_buf, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 			return;
 		}
+
+		List<FolderDatum> pathsData = new ArrayList<>();
+		for (String path : paths) {
+			FolderDatum datum = new FolderDatum();
+			datum.path = path;
+			datum.name = new File(path).getName();
+			pathsData.add(datum);
+		}
+		IndexInserter ii = new IndexInserter(db_buf);
+		ii.insert(pathsData.toArray(new FolderDatum[pathsData.size()]));
+
+		List<Datum> errList = new ArrayList<>();
 
 		// スレッドリスト
 		List<Thread> threads = new ArrayList<>();
@@ -63,26 +79,28 @@ public class IndexCreator {
 
 				@Override
 				public void run() {
-					System.out.println("create start [" + path + "]");
+					SnelLogger.info("create start [" + path + "]");
 					File file = createFileAndFolderList(path);
 					IndexInserter ii = new IndexInserter(db_buf);
 					readFileAndFolderList(file, new Consumer<List<FileDatum>>() {
 
 						@Override
 						public void accept(List<FileDatum> list) {
-							System.out.println("insert [" + path + "]'s file:" + list.size());
-							ii.insert(list.toArray(new FileDatum[list.size()]));
+							SnelLogger.info("insert [" + path + "]'s file:" + list.size());
+							List<FileDatum> buf = ii.insert(list.toArray(new FileDatum[list.size()]));
+							buf.forEach(datum -> errList.add(datum));
 						}
 					}, new Consumer<List<FolderDatum>>() {
 
 						@Override
 						public void accept(List<FolderDatum> list) {
-							System.out.println("insert [" + path + "]'s folder:" + list.size());
-							ii.insert(list.toArray(new FolderDatum[list.size()]));
+							SnelLogger.info("insert [" + path + "]'s folder:" + list.size());
+							List<FolderDatum> buf = ii.insert(list.toArray(new FolderDatum[list.size()]));
+							buf.forEach(datum -> errList.add(datum));
 						}
 					});
 					file.delete();
-					System.out.println("create end [" + path + "]");
+					SnelLogger.info("create end [" + path + "]");
 				}
 			};
 			thread.start();
@@ -94,8 +112,20 @@ public class IndexCreator {
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				SnelLogger.warning(e);
 			}
+		}
+
+		if (errList.size() > 0) {
+			java.awt.Toolkit.getDefaultToolkit().beep();
+			StringBuffer message = new StringBuffer();
+			message.append("以下のファイルもしくはディレクトリのインデックス作成に失敗しました。\n");
+			errList.forEach(datum -> {
+				message.append(datum.path + "\n");
+			});
+			JOptionPane.showMessageDialog(null,
+					message.toString(),
+					"警告", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 
@@ -103,7 +133,7 @@ public class IndexCreator {
 
 		// お気に入りを退避
 		IndexSelector is = new IndexSelector();
-		System.out.println("");
+		SnelLogger.info("");
 		List<FavoDatum> list = is.selectFavo("select * from favo_table;");
 
 		// 書き込んだdb_bufを本番dbに上書き
@@ -111,7 +141,7 @@ public class IndexCreator {
 			Files.copy(db_buf, db_file, StandardCopyOption.REPLACE_EXISTING);
 			Files.delete(db_buf);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 			return;
 		}
 
@@ -185,7 +215,7 @@ public class IndexCreator {
 				buf_FileList.clear();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 	}
 
@@ -243,7 +273,7 @@ public class IndexCreator {
 			proc.waitFor();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 
 		return ret;
@@ -266,7 +296,7 @@ public class IndexCreator {
 		hiddenFolderList = new ArrayList<>();
 		try {
 			for (String path : paths) {
-				System.out.println("create hidden list start [" + path + "]");
+				SnelLogger.info("create hidden list start [" + path + "]");
 				File file = new File("./contents/tmp/hidden-" + path.hashCode() + ".tmp");
 
 				if (!file.exists()) {
@@ -290,10 +320,10 @@ public class IndexCreator {
 						hiddenFolderList.add(line);
 					}
 				}
-				System.out.println("create hidden list end   [" + path + "]");
+				SnelLogger.info("create hidden list end   [" + path + "]");
 			}
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 		return hiddenFolderList;
 	}

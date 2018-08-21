@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.net.perorin.snel.main.index.datum.FavoDatum;
+import org.net.perorin.snel.main.logger.SnelLogger;
 
 public class IndexDeleter {
 
@@ -25,7 +26,7 @@ public class IndexDeleter {
 			conn.setAutoCommit(false);
 			return conn;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 		return null;
 	}
@@ -44,6 +45,7 @@ public class IndexDeleter {
 			conn.commit();
 			return true;
 		} catch (SQLException e) {
+			SnelLogger.warning(e);
 			System.out.println("delete実行中にエラー発生");
 			return false;
 		}

@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.net.perorin.snel.main.logger.SnelLogger;
+
 public class SnelProperties extends Properties {
 
 	public static final String snel_index_cmd_dir_folder_find_regex = "snel.index.cmd.dir.folder.find.regex";
@@ -26,7 +28,7 @@ public class SnelProperties extends Properties {
 		try {
 			this.load(new FileReader("./contents/properties/snel.properties"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			SnelLogger.warning(e);
 		}
 	}
 
